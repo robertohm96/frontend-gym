@@ -1,92 +1,103 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Únete a Perfect Body Gym
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <h2 class="text-3xl font-black text-gray-900 tracking-tight uppercase">
+        Únete al Equipo
       </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        ¿Ya tienes cuenta?
-        <router-link to="/login" class="font-medium text-blue-600 hover:text-blue-500">
-          Inicia sesión aquí
-        </router-link>
+      <p class="mt-2 text-sm text-gray-600">
+        Empieza tu transformación hoy mismo
       </p>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div class="bg-white py-8 px-4 shadow-xl shadow-gray-200 sm:rounded-2xl sm:px-10 border border-gray-100 relative overflow-hidden">
         
-        <form @submit.prevent="registrarUsuario" class="space-y-6">
+        <div v-if="registroExitoso" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+            <span class="text-4xl">🎉</span>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">¡Bienvenido a bordo!</h3>
+          <p class="text-gray-500 mb-8">
+            Tu cuenta ha sido creada exitosamente. <br>
+            Ya puedes acceder a todos los beneficios.
+          </p>
+          <router-link 
+            to="/login"
+            class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg hover:shadow-green-500/30 block"
+          >
+            IR A INICIAR SESIÓN
+          </router-link>
+        </div>
+
+        <form v-else @submit.prevent="registrarUsuario" class="space-y-5">
           
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-            <div class="mt-1">
-              <input 
-                v-model="formulario.nombre" 
-                type="text" 
-                required 
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Ej. Juan Pérez"
-              />
-            </div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Nombre Completo</label>
+            <input 
+              v-model="formulario.nombre" 
+              type="text" 
+              required 
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Ej. Juan Pérez"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-            <div class="mt-1">
-              <input 
-                v-model="formulario.email" 
-                type="email" 
-                required 
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="juan@ejemplo.com"
-              />
-            </div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Correo Electrónico</label>
+            <input 
+              v-model="formulario.email" 
+              type="email" 
+              required 
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="juan@ejemplo.com"
+            />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Teléfono / Celular</label>
-            <div class="mt-1">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
               <input 
                 v-model="formulario.telefono" 
                 type="tel" 
                 required 
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="300 123 4567"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="300..."
               />
             </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-            <div class="mt-1">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">Contraseña</label>
               <input 
                 v-model="formulario.password" 
                 type="password" 
                 required 
                 minlength="6"
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="********"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="******"
               />
             </div>
           </div>
 
-          <div v-if="errorMsg" class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">{{ errorMsg }}</h3>
-              </div>
-            </div>
+          <div v-if="errorMsg" class="rounded-lg bg-red-50 p-3 border border-red-100 flex items-start gap-2">
+            <span class="text-red-500 mt-0.5">⚠️</span>
+            <p class="text-sm font-medium text-red-800">{{ errorMsg }}</p>
           </div>
 
-          <div>
-            <button 
-              type="submit" 
-              :disabled="cargando"
-              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {{ cargando ? 'Creando cuenta...' : 'Registrarme' }}
-            </button>
+          <button 
+            type="submit" 
+            :disabled="cargando"
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all"
+          >
+            {{ cargando ? 'Registrando...' : 'CREAR CUENTA' }}
+          </button>
+
+          <div class="mt-4 text-center">
+            <p class="text-sm text-gray-600">
+              ¿Ya tienes cuenta?
+              <router-link to="/login" class="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                Inicia sesión aquí
+              </router-link>
+            </p>
           </div>
         </form>
 
@@ -97,19 +108,18 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import api from '../services/api';
 
-const router = useRouter();
 const cargando = ref(false);
 const errorMsg = ref('');
+const registroExitoso = ref(false); // Controla si mostramos el mensaje de éxito
 
 const formulario = ref({
   nombre: '',
   email: '',
   password: '',
   telefono: '',
-  tipoCliente: 'DIARIO' // Valor por defecto obligatorio para que el backend no falle
+  tipoCliente: 'DIARIO'
 });
 
 const registrarUsuario = async () => {
@@ -117,19 +127,16 @@ const registrarUsuario = async () => {
   errorMsg.value = '';
 
   try {
-    // Enviamos los datos al backend (ClienteControlador)
     await api.post('/clientes', formulario.value);
-    
-    // Si sale bien, redirigimos al login con un mensaje (o alerta)
-    alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
-    router.push('/login');
+    // En lugar de alert, activamos la variable para mostrar el diseño de éxito
+    registroExitoso.value = true;
     
   } catch (error) {
     console.error(error);
     if (error.response && error.response.status === 409) {
-      errorMsg.value = 'Este correo ya está registrado.';
+      errorMsg.value = 'Este correo electrónico ya está registrado. Intenta con otro o inicia sesión.';
     } else {
-      errorMsg.value = 'Ocurrió un error al registrar. Intenta nuevamente.';
+      errorMsg.value = 'Hubo un problema técnico. Por favor intenta de nuevo más tarde.';
     }
   } finally {
     cargando.value = false;

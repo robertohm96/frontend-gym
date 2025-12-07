@@ -47,7 +47,7 @@
             <div v-if="usuario.tipoCliente === 'SUSCRIPTOR'" class="border-t border-gray-100 p-4 bg-blue-50/30">
               <div v-if="suscripcionActiva">
                 <p class="text-gray-500 text-xs font-bold uppercase mb-1">Tu Plan Vence:</p>
-                <p class="text-blue-800 font-black text-lg">{{ suscripcionActiva.fechaFin }}</p>
+                <p class="text-blue-800 font-black text-lg">{{ formatearFecha(suscripcionActiva.fechaFin) }}</p>
                 <div class="mt-2 flex items-center justify-center gap-2">
                   <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                   <span class="text-green-700 text-xs font-bold uppercase">Suscripción Activa</span>
@@ -97,14 +97,6 @@
           
           <div class="flex gap-6 mb-6 border-b border-gray-200">
             <button 
-              @click="pestana = 'rutinas'"
-              class="pb-3 px-1 font-bold text-sm transition-all relative hover:text-blue-600"
-              :class="pestana === 'rutinas' ? 'text-blue-600' : 'text-gray-400'"
-            >
-              MIS RUTINAS
-              <div v-if="pestana === 'rutinas'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
-            </button>
-            <button 
               @click="pestana = 'historial'"
               class="pb-3 px-1 font-bold text-sm transition-all relative hover:text-blue-600"
               :class="pestana === 'historial' ? 'text-blue-600' : 'text-gray-400'"
@@ -112,34 +104,14 @@
               HISTORIAL & PAGOS
               <div v-if="pestana === 'historial'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
             </button>
-          </div>
-
-          <div v-if="pestana === 'rutinas'" class="space-y-6 animate-fade-in-up">
-            <div v-if="rutinas.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100">
-              <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📋</div>
-              <h3 class="text-gray-800 font-bold text-lg mb-1">Sin rutinas asignadas</h3>
-              <p class="text-gray-500 text-sm">Habla con un entrenador para obtener tu plan.</p>
-            </div>
-
-            <div v-for="rutina in rutinas" :key="rutina.idRutina" class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
-                    {{ new Date(rutina.fechaAsignacion).getDate() }}
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-gray-800 text-sm">Plan de Entrenamiento</h3>
-                    <p class="text-xs text-gray-500">{{ rutina.fechaAsignacion }}</p>
-                  </div>
-                </div>
-                <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-bold border border-purple-200">
-                  Entrenador: {{ rutina.entrenador ? rutina.entrenador.nombre : 'Staff' }}
-                </span>
-              </div>
-              <div class="p-6">
-                <p class="text-gray-600 whitespace-pre-line leading-relaxed text-sm">{{ rutina.descripcion }}</p>
-              </div>
-            </div>
+            <button 
+              @click="pestana = 'rutinas'"
+              class="pb-3 px-1 font-bold text-sm transition-all relative hover:text-blue-600"
+              :class="pestana === 'rutinas' ? 'text-blue-600' : 'text-gray-400'"
+            >
+              MIS RUTINAS
+              <div v-if="pestana === 'rutinas'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
+            </button>
           </div>
 
           <div v-if="pestana === 'historial'" class="space-y-8 animate-fade-in-up">
@@ -161,7 +133,7 @@
                   </thead>
                   <tbody class="divide-y divide-gray-50">
                     <tr v-for="pago in pagos" :key="pago.idPago" class="hover:bg-gray-50 transition-colors">
-                      <td class="px-6 py-4 text-gray-600 font-medium">{{ pago.fecha }}</td>
+                      <td class="px-6 py-4 text-gray-600 font-medium">{{ formatearFecha(pago.fecha) }}</td>
                       <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">{{ pago.concepto }}</span>
                       </td>
@@ -210,6 +182,34 @@
 
           </div>
 
+          <div v-if="pestana === 'rutinas'" class="space-y-6 animate-fade-in-up">
+            <div v-if="rutinas.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100">
+              <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📋</div>
+              <h3 class="text-gray-800 font-bold text-lg mb-1">Sin rutinas asignadas</h3>
+              <p class="text-gray-500 text-sm">Habla con un entrenador para obtener tu plan.</p>
+            </div>
+
+            <div v-for="rutina in rutinas" :key="rutina.idRutina" class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                    {{ new Date(rutina.fechaAsignacion).getDate() }}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-800 text-sm">Plan de Entrenamiento</h3>
+                    <p class="text-xs text-gray-500">{{ formatearFecha(rutina.fechaAsignacion) }}</p>
+                  </div>
+                </div>
+                <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-bold border border-purple-200">
+                  Entrenador: {{ rutina.entrenador ? rutina.entrenador.nombre : 'Staff' }}
+                </span>
+              </div>
+              <div class="p-6">
+                <p class="text-gray-600 whitespace-pre-line leading-relaxed text-sm">{{ rutina.descripcion }}</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </main>
@@ -223,16 +223,24 @@ import api from '../services/api';
 
 const router = useRouter();
 const usuario = ref({});
-const pestana = ref('rutinas');
+const pestana = ref('historial'); // Por defecto en historial
 
 const rutinas = ref([]);
 const pagos = ref([]);
 const asistencias = ref([]);
 const suscripcionActiva = ref(null);
 
-// Variables para el monitor de ocupación
 const ocupacion = ref(0);
 let interval = null;
+
+// Formateador seguro de fechas
+const formatearFecha = (fecha) => {
+  if (!fecha) return '-';
+  // Si viene como array [2024, 12, 07]
+  if (Array.isArray(fecha)) return new Date(fecha[0], fecha[1]-1, fecha[2]).toLocaleDateString();
+  // Si viene como string
+  return new Date(fecha).toLocaleDateString();
+};
 
 onMounted(async () => {
   const storedUser = localStorage.getItem('usuario');
@@ -276,7 +284,6 @@ const cargarDatosCliente = async () => {
   }
 };
 
-// Lógica del Monitor de Ocupación (Reutilizada del Home)
 const fetchOcupacion = async () => {
   try {
     const res = await api.get('/asistencias/ocupacion');

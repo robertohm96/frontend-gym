@@ -232,6 +232,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const usuario = ref({});
@@ -328,7 +329,6 @@ const mensajeEstado = computed(() => {
   return 'Gimnasio Lleno';
 });
 
-
 const descargarQR = async () => {
   try {
     const response = await api.get(`/clientes/${usuario.value.idCliente}/qr`, { responseType: 'blob' });
@@ -341,10 +341,9 @@ const descargarQR = async () => {
     link.remove();
   } catch (e) {
     console.error(e);
-    alert('No se pudo descargar el QR');
+    Swal.fire('Error', 'No se pudo descargar el QR', 'error');
   }
 };
-
 
 const logout = () => {
   localStorage.clear();

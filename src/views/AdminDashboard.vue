@@ -46,7 +46,6 @@
       </div>
 
       <div v-if="activeTab === 'dashboard'" class="animate-fade-in-up">
-        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
@@ -244,12 +243,10 @@
 
     <div v-if="mostrarModalPago" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
-        
         <div class="bg-gradient-to-r from-green-600 to-green-500 p-5 text-white flex justify-between items-center">
           <h3 class="font-bold text-lg flex items-center gap-2"><span>💸</span> Registrar Pago</h3>
           <button @click="cerrarModalPago" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition">✕</button>
         </div>
-
         <div class="p-6 bg-gray-50">
           <div class="flex items-center justify-between mb-6 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
             <div>
@@ -261,9 +258,7 @@
               <p class="text-gray-900 font-mono">#{{ clienteSeleccionado.idCliente }}</p>
             </div>
           </div>
-
           <form @submit.prevent="procesarPago" class="space-y-5">
-            
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de Servicio</label>
               <select v-model="formPago.concepto" @change="actualizarMonto" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white shadow-sm transition font-medium">
@@ -271,14 +266,12 @@
                 <option value="MENSUAL">⭐ Mensualidad ($80.000)</option>
               </select>
             </div>
-
             <div v-if="formPago.concepto === 'DIARIO'" class="animate-fade-in">
               <label class="flex items-center gap-3 p-3 border border-blue-200 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition">
                 <input type="checkbox" v-model="usarMaquinaExtra" @change="actualizarMonto" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
                 <span class="text-sm font-bold text-blue-800">Incluir Máquina Extra (+$3.000)</span>
               </label>
             </div>
-
             <div v-if="usarMaquinaExtra && formPago.concepto === 'DIARIO'" class="animate-fade-in">
               <label class="block text-sm font-bold text-gray-700 mb-2">Seleccionar Máquina</label>
               <select v-model="formPago.idMaquina" class="w-full p-3 border border-gray-300 rounded-xl bg-white shadow-sm">
@@ -288,7 +281,6 @@
                 </option>
               </select>
             </div>
-
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-2">Total a Cobrar</label>
               <div class="relative">
@@ -296,7 +288,6 @@
                 <input v-model="formPago.monto" type="number" class="w-full pl-8 p-3 border border-gray-300 rounded-xl font-mono font-black text-2xl text-green-700 bg-white shadow-inner focus:ring-2 focus:ring-green-500" readonly />
               </div>
             </div>
-
             <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-600/30 transition transform hover:scale-[1.02] flex justify-center items-center gap-2">
               <span>CONFIRMAR PAGO</span>
               <span>➞</span>
@@ -313,6 +304,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const usuario = ref({});
@@ -333,7 +325,7 @@ const nuevaMaquina = ref({ nombre: '', tipo: 'Fuerza', estado: 'DISPONIBLE' });
 // Estado Pago
 const mostrarModalPago = ref(false);
 const clienteSeleccionado = ref({});
-const usarMaquinaExtra = ref(false); // Checkbox del combo
+const usarMaquinaExtra = ref(false); 
 const formPago = ref({ idCliente: null, concepto: 'DIARIO', monto: 3000, idMaquina: null });
 
 const tabs = [
@@ -372,14 +364,31 @@ const cargarTodo = async () => {
   }
 };
 
-// --- Clientes ---
 const verQr = (id) => window.open(`http://localhost:8080/api/clientes/${id}/qr`, '_blank');
-const eliminarCliente = async (id) => {
-  if(!confirm('¿Eliminar cliente permanentemente?')) return;
-  try { await api.delete(`/clientes/${id}`); await cargarTodo(); } catch(e) { alert('Error al eliminar'); }
+
+const eliminarCliente = (id) => {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "Esta acción eliminará al cliente permanentemente.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/clientes/${id}`);
+        await cargarTodo();
+        Swal.fire('Eliminado', 'El cliente ha sido eliminado.', 'success');
+      } catch(e) {
+        Swal.fire('Error', 'No se pudo eliminar el cliente.', 'error');
+      }
+    }
+  });
 };
 
-// --- Pagos ---
 const abrirModalPago = (c) => {
   clienteSeleccionado.value = c;
   usarMaquinaExtra.value = false;
@@ -399,12 +408,12 @@ const actualizarMonto = () => {
 
 const procesarPago = async () => {
   if (usarMaquinaExtra.value && !formPago.value.idMaquina) {
-    alert("Por favor selecciona qué máquina usará."); return;
+    Swal.fire('Atención', 'Por favor selecciona qué máquina usará.', 'warning');
+    return;
   }
 
   try {
     if (formPago.value.concepto === 'DIARIO' && usarMaquinaExtra.value) {
-       // LÓGICA COMBO: Dos pagos internos
        await api.post('/pagos', { 
          idCliente: formPago.value.idCliente, 
          concepto: 'DIARIO', 
@@ -417,45 +426,103 @@ const procesarPago = async () => {
          idMaquina: formPago.value.idMaquina 
        });
     } else {
-       // Pago normal (Diario solo o Mensual)
        await api.post('/pagos', formPago.value);
     }
     
-    alert('✅ Pago registrado con éxito');
     cerrarModalPago();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Pago Exitoso!',
+      text: 'La transacción ha sido registrada.',
+      timer: 2000,
+      showConfirmButton: false
+    });
     await cargarTodo(); 
   } catch(e) {
     console.error(e);
-    alert('Error al procesar pago');
+    Swal.fire('Error', 'No se pudo procesar el pago.', 'error');
   }
 };
 
-// --- Personal ---
 const crearEntrenador = async () => {
-  try { await api.post('/entrenadores', nuevoEntrenador.value); mostrarFormEntrenador.value = false; await cargarTodo(); } catch(e) { alert('Error'); }
+  try { 
+    await api.post('/entrenadores', nuevoEntrenador.value); 
+    mostrarFormEntrenador.value = false; 
+    await cargarTodo();
+    Swal.fire('Registrado', 'Entrenador agregado correctamente.', 'success');
+  } catch(e) { 
+    Swal.fire('Error', 'No se pudo crear el entrenador.', 'error');
+  }
 };
-const eliminarEntrenador = async (id) => {
-  if(!confirm('¿Despedir entrenador?')) return;
-  try { await api.delete(`/entrenadores/${id}`); await cargarTodo(); } catch(e) { alert('Error'); }
+
+const eliminarEntrenador = (id) => {
+  Swal.fire({
+    title: '¿Despedir entrenador?',
+    text: "No podrás revertir esto.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try { 
+        await api.delete(`/entrenadores/${id}`); 
+        await cargarTodo();
+        Swal.fire('Eliminado', 'El entrenador ha sido eliminado.', 'success');
+      } catch(e) { 
+        Swal.fire('Error', 'No se pudo eliminar.', 'error');
+      }
+    }
+  });
 };
 
 const crearMaquina = async () => {
-  try { await api.post('/maquinas', nuevaMaquina.value); mostrarFormMaquina.value = false; await cargarTodo(); } catch(e) { alert('Error'); }
+  try { 
+    await api.post('/maquinas', nuevaMaquina.value); 
+    mostrarFormMaquina.value = false; 
+    await cargarTodo(); 
+    Swal.fire('Registrada', 'Máquina agregada al inventario.', 'success');
+  } catch(e) { 
+    Swal.fire('Error', 'No se pudo registrar la máquina.', 'error');
+  }
 };
+
 const cambiarEstadoMaquina = async (m) => {
   const nuevo = m.estado === 'DISPONIBLE' ? 'MANTENIMIENTO' : 'DISPONIBLE';
-  try { await api.put(`/maquinas/${m.idMaquina}`, { ...m, estado: nuevo }); await cargarTodo(); } catch(e) { alert('Error'); }
-};
-const eliminarMaquina = async (id) => {
-  if(!confirm('¿Borrar máquina?')) return;
-  try { await api.delete(`/maquinas/${id}`); await cargarTodo(); } catch(e) { alert('Error'); }
+  try { 
+    await api.put(`/maquinas/${m.idMaquina}`, { ...m, estado: nuevo }); 
+    await cargarTodo();
+    const msg = nuevo === 'DISPONIBLE' ? 'Máquina habilitada' : 'Máquina en mantenimiento';
+    Swal.fire('Estado Actualizado', msg, 'info');
+  } catch(e) { 
+    Swal.fire('Error', 'No se pudo cambiar el estado.', 'error');
+  }
 };
 
-
-const logout = () => { 
-  localStorage.clear(); 
-  router.push('/'); 
+const eliminarMaquina = (id) => {
+  Swal.fire({
+    title: '¿Borrar máquina?',
+    text: "Se eliminará del inventario.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, borrar'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try { 
+        await api.delete(`/maquinas/${id}`); 
+        await cargarTodo(); 
+        Swal.fire('Eliminada', 'La máquina ha sido borrada.', 'success');
+      } catch(e) { 
+        Swal.fire('Error', 'No se pudo eliminar.', 'error');
+      }
+    }
+  });
 };
+
+const logout = () => { localStorage.clear(); router.push('/'); };
 </script>
 
 <style>

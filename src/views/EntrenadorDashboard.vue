@@ -144,6 +144,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const usuario = ref({});
@@ -209,17 +210,29 @@ const guardarRutina = async () => {
   try {
     if (editandoId.value) {
       await api.put(`/rutinas/${editandoId.value}`, payload);
-      alert('Rutina actualizada correctamente');
+      Swal.fire({
+        icon: 'success',
+        title: 'Actualizado',
+        text: 'Rutina actualizada correctamente',
+        timer: 1500,
+        showConfirmButton: false
+      });
     } else {
       await api.post('/rutinas', payload);
-      alert('Rutina asignada correctamente');
+      Swal.fire({
+        icon: 'success',
+        title: 'Asignado',
+        text: 'Nueva rutina asignada correctamente',
+        timer: 1500,
+        showConfirmButton: false
+      });
     }
     await cargarRutinas(clienteSeleccionado.value.idCliente);
     cancelarEdicion();
 
   } catch (e) {
     console.error(e);
-    alert('Error al guardar la rutina');
+    Swal.fire('Error', 'No se pudo guardar la rutina.', 'error');
   }
 };
 
@@ -238,10 +251,9 @@ const cerrarModal = () => {
   clienteSeleccionado.value = null;
 };
 
-
 const logout = () => {
   localStorage.clear();
-  router.push('/'); 
+  router.push('/');
 };
 </script>
 

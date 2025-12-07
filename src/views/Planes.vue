@@ -67,9 +67,6 @@
               <li class="flex items-center gap-3 text-gray-300">
                 <span class="text-blue-500 text-xl">✓</span> Seguimiento de progreso
               </li>
-              <li class="flex items-center gap-3 text-gray-300">
-                <span class="text-blue-500 text-xl">✓</span> Acceso rápido con QR
-              </li>
             </ul>
 
             <router-link to="/registro-cliente" class="block w-full py-4 text-center font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition">

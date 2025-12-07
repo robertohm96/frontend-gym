@@ -38,7 +38,7 @@
             <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl shrink-0">📱</div>
             <div>
               <h3 class="font-bold text-gray-800">Contacto</h3>
-              <p class="text-gray-600">+57 300 123 4567</p>
+              <p class="text-gray-600">+57 3002013804</p>
             </div>
           </div>
 

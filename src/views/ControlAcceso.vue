@@ -11,19 +11,26 @@
         <h1 class="text-2xl font-black text-white tracking-widest uppercase flex items-center justify-center gap-2">
           <span class="animate-pulse text-red-500">●</span> Terminal de Acceso
         </h1>
-        <p class="text-gray-400 text-xs">Apunta la cámara al código QR del cliente</p>
       </div>
 
-      <div class="bg-black rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800 relative min-h-[300px]">
-        <div id="reader" class="w-full h-full"></div>
+      <div class="bg-black rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800 relative">
+        <div id="reader" style="width: 100%; min-height: 300px; background-color: black;"></div>
         
-        <div class="absolute inset-0 pointer-events-none border-[30px] border-black/30 rounded-3xl"></div>
-        <div class="absolute top-1/2 left-0 w-full h-0.5 bg-red-500/50 shadow-[0_0_15px_rgba(239,68,68,1)] animate-scan pointer-events-none"></div>
+        <div v-if="!cargando" class="absolute inset-0 pointer-events-none border-[30px] border-black/30 rounded-3xl"></div>
+        <div v-if="!cargando" class="absolute top-1/2 left-0 w-full h-0.5 bg-red-500/50 shadow-[0_0_15px_rgba(239,68,68,1)] animate-scan pointer-events-none"></div>
+
+        <div v-if="cameraError" class="absolute inset-0 flex items-center justify-center bg-gray-900/90 text-white p-6 text-center z-50">
+          <div>
+            <p class="text-red-400 font-bold text-lg mb-2">⚠ Error de Cámara</p>
+            <p class="text-sm text-gray-400">{{ cameraError }}</p>
+            <button @click="iniciarScanner" class="mt-4 bg-white text-black px-4 py-2 rounded font-bold text-sm">Reintentar</button>
+          </div>
+        </div>
       </div>
 
       <div v-if="mensajeRespuesta" 
-           class="mt-6 p-6 rounded-2xl text-center transform transition-all duration-300 shadow-xl border-t-4"
-           :class="estado === 'exito' ? 'bg-green-900/80 border-green-500' : 'bg-red-900/80 border-red-500'"
+           class="mt-6 p-6 rounded-2xl text-center transform transition-all duration-300 shadow-xl border-t-4 animate-fade-in-up"
+           :class="estado === 'exito' ? 'bg-green-900/90 border-green-500' : 'bg-red-900/90 border-red-500'"
       >
         <div class="text-5xl mb-2">{{ estado === 'exito' ? '✅' : '⛔' }}</div>
         <h2 class="text-2xl font-black text-white uppercase tracking-tight">{{ tituloEstado }}</h2>
@@ -31,17 +38,18 @@
       </div>
 
       <div class="mt-8 border-t border-gray-800 pt-6">
-        <p class="text-gray-500 text-xs text-center mb-2 uppercase tracking-wide font-bold">¿Falla la cámara? Ingreso Manual</p>
+        <p class="text-gray-500 text-xs text-center mb-2 uppercase tracking-wide font-bold">Ingreso Manual</p>
         <form @submit.prevent="procesarCodigo(codigoManual)" class="flex gap-2">
           <input 
             v-model="codigoManual" 
             type="text" 
-            placeholder="Escribe el ID aquí..." 
+            placeholder="ID del cliente..." 
             class="flex-1 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 focus:outline-none focus:border-blue-500 transition"
+            :disabled="cargando"
           />
           <button 
             type="submit" 
-            class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 rounded-xl transition shadow-lg shadow-blue-900/50"
+            class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 rounded-xl transition shadow-lg shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="cargando"
           >
             ENTRAR
@@ -54,33 +62,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Html5Qrcode } from "html5-qrcode";
 import api from '../services/api';
 
 const codigoManual = ref('');
-const estado = ref('espera'); // espera, exito, error
+const estado = ref('espera');
 const mensajeRespuesta = ref('');
 const tituloEstado = ref('');
-const cargando = ref(false);
-let scanner = null;
-let audioExito = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg'); // Sonido simple
-let audioError = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+const cargando = ref(false); // Esta variable actúa como "semáforo"
+const cameraError = ref('');
+let html5QrCode = null;
 
-// --- Lógica de Procesamiento ---
+// Sonidos (Opcional)
+const audioExito = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+const audioError = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
 const procesarCodigo = async (codigo) => {
+  // 1. SEMÁFORO: Si ya estamos procesando uno, ignoramos cualquier otro código
   if (cargando.value || !codigo) return;
   
-  cargando.value = true;
-  // Pausar scanner visualmente si se quiere, o dejarlo correr
-  
+  cargando.value = true; // Bloqueamos el escáner temporalmente
+
   try {
-    // 1. Llamar al Backend
     const response = await api.post('/asistencias/escanear', null, {
       params: { qrCode: codigo }
     });
 
-    // 2. Éxito
     const asistencia = response.data;
     const nombre = asistencia.cliente ? asistencia.cliente.nombre : 'Cliente';
     const accion = asistencia.estado === 'DENTRO' ? 'BIENVENIDO' : 'HASTA LUEGO';
@@ -88,68 +96,80 @@ const procesarCodigo = async (codigo) => {
     estado.value = 'exito';
     tituloEstado.value = accion;
     mensajeRespuesta.value = nombre;
-    audioExito.play().catch(() => {}); // Sonar beep (si el navegador deja)
+    audioExito.play().catch(()=>{});
 
   } catch (error) {
-    // 3. Error
     estado.value = 'error';
     tituloEstado.value = 'ACCESO DENEGADO';
-    audioError.play().catch(() => {});
-    
     if (error.response && error.response.data) {
-      mensajeRespuesta.value = typeof error.response.data === 'string' 
-        ? error.response.data 
-        : 'Código no válido.';
+        mensajeRespuesta.value = typeof error.response.data === 'string' ? error.response.data : 'Código no válido.';
     } else {
-      mensajeRespuesta.value = 'Error de conexión.';
+        mensajeRespuesta.value = 'Error de conexión o código desconocido.';
     }
+    audioError.play().catch(()=>{});
   } finally {
-    cargando.value = false;
     codigoManual.value = '';
     
-    // Limpiar mensaje después de 3 segundos para el siguiente
+    // 2. ENFRIAMIENTO: Esperamos 3 segundos antes de permitir escanear otro
     setTimeout(() => {
       mensajeRespuesta.value = '';
       estado.value = 'espera';
+      cargando.value = false; // ¡AQUÍ DESBLOQUEAMOS EL ESCÁNER!
     }, 3000);
   }
 };
 
-// --- Configuración del Escáner ---
-const onScanSuccess = (decodedText, decodedResult) => {
-  // Para evitar lecturas múltiples muy rápidas del mismo código
-  if (!cargando.value) {
-    console.log(`Código escaneado: ${decodedText}`);
-    procesarCodigo(decodedText);
+const iniciarScanner = async () => {
+  cameraError.value = '';
+  
+  try {
+    // Permisos explícitos
+    await navigator.mediaDevices.getUserMedia({ video: true });
+
+    html5QrCode = new Html5Qrcode("reader");
+    
+    await html5QrCode.start(
+      { facingMode: "environment" }, 
+      { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      },
+      (decodedText) => {
+          // Callback de éxito: Solo procesa si no estamos ocupados
+          if (!cargando.value) {
+            console.log("QR Detectado:", decodedText);
+            procesarCodigo(decodedText);
+          }
+      },
+      (errorMessage) => {
+          // Ignorar errores de "no QR found" en cada frame
+      }
+    );
+
+  } catch (err) {
+    console.error("Error cámara:", err);
+    cameraError.value = "No se pudo iniciar la cámara. Verifica permisos.";
   }
 };
 
 onMounted(() => {
-  // Configuración de la librería html5-qrcode
-  scanner = new Html5QrcodeScanner(
-    "reader",
-    { 
-      fps: 10, // Cuadros por segundo
-      qrbox: { width: 250, height: 250 }, // Zona de escaneo
-      aspectRatio: 1.0
-    },
-    /* verbose= */ false
-  );
-  
-  scanner.render(onScanSuccess, (error) => {
-
-  });
+  iniciarScanner();
 });
 
-onUnmounted(() => {
-  if (scanner) {
-    scanner.clear().catch(error => console.error("Error al limpiar scanner", error));
+onUnmounted(async () => {
+  if (html5QrCode) {
+    try {
+      await html5QrCode.stop();
+      await html5QrCode.clear();
+    } catch (e) {
+      console.error("Error al limpiar scanner", e);
+    }
   }
 });
 </script>
 
 <style>
-/* Animación del láser rojo */
 @keyframes scan {
   0% { top: 10%; opacity: 0; }
   50% { opacity: 1; }
@@ -158,6 +178,11 @@ onUnmounted(() => {
 .animate-scan {
   animation: scan 2s linear infinite;
 }
-
-#reader__dashboard_section_csr span { display: none !important; }
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>

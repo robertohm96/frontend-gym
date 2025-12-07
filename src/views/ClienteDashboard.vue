@@ -104,7 +104,9 @@
               HISTORIAL & PAGOS
               <div v-if="pestana === 'historial'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
             </button>
+
             <button 
+              v-if="usuario.tipoCliente === 'SUSCRIPTOR'"
               @click="pestana = 'rutinas'"
               class="pb-3 px-1 font-bold text-sm transition-all relative hover:text-blue-600"
               :class="pestana === 'rutinas' ? 'text-blue-600' : 'text-gray-400'"
@@ -164,12 +166,14 @@
                   </thead>
                   <tbody class="divide-y divide-gray-50">
                     <tr v-for="asis in asistencias" :key="asis.idAsistencia" class="hover:bg-gray-50 transition-colors">
-                      <td class="px-6 py-4 text-gray-600 font-medium">{{ new Date(asis.entrada).toLocaleDateString() }}</td>
+                      <td class="px-6 py-4 text-gray-600 font-medium">
+                        {{ new Date(asis.entrada).toLocaleDateString('es-CO', {timeZone: 'America/Bogota'}) }}
+                      </td>
                       <td class="px-6 py-4 text-green-600 font-bold">
-                        {{ new Date(asis.entrada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                        {{ new Date(asis.entrada).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit', timeZone: 'America/Bogota'}) }}
                       </td>
                       <td class="px-6 py-4 text-gray-500 font-medium">
-                        {{ asis.salida ? new Date(asis.salida).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                        {{ asis.salida ? new Date(asis.salida).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit', timeZone: 'America/Bogota'}) : '--:--' }}
                       </td>
                     </tr>
                     <tr v-if="asistencias.length === 0">
@@ -233,13 +237,22 @@ const suscripcionActiva = ref(null);
 const ocupacion = ref(0);
 let interval = null;
 
-// Formateador seguro de fechas
+// Formateador seguro de fechas ajustado a COLOMBIA
 const formatearFecha = (fecha) => {
   if (!fecha) return '-';
+  const opciones = { 
+    timeZone: 'America/Bogota', 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit' 
+  };
+
   // Si viene como array [2024, 12, 07]
-  if (Array.isArray(fecha)) return new Date(fecha[0], fecha[1]-1, fecha[2]).toLocaleDateString();
+  if (Array.isArray(fecha)) {
+    return new Date(fecha[0], fecha[1]-1, fecha[2]).toLocaleDateString('es-CO', opciones);
+  }
   // Si viene como string
-  return new Date(fecha).toLocaleDateString();
+  return new Date(fecha).toLocaleDateString('es-CO', opciones);
 };
 
 onMounted(async () => {
@@ -266,8 +279,14 @@ onUnmounted(() => clearInterval(interval));
 const cargarDatosCliente = async () => {
   const id = usuario.value.idCliente;
   try {
-    const resRutinas = await api.get(`/rutinas/cliente/${id}`);
-    rutinas.value = resRutinas.data;
+    // Solo cargamos rutinas si es suscriptor
+    if (usuario.value.tipoCliente === 'SUSCRIPTOR') {
+        const resRutinas = await api.get(`/rutinas/cliente/${id}`);
+        rutinas.value = resRutinas.data;
+        
+        const resSusc = await api.get(`/suscripciones/cliente/${id}`);
+        suscripcionActiva.value = resSusc.data.find(s => s.estado === 'ACTIVA') || null;
+    }
 
     const resPagos = await api.get(`/pagos/cliente/${id}`);
     pagos.value = resPagos.data;
@@ -275,10 +294,6 @@ const cargarDatosCliente = async () => {
     const resAsis = await api.get(`/asistencias/cliente/${id}`);
     asistencias.value = resAsis.data;
 
-    if (usuario.value.tipoCliente === 'SUSCRIPTOR') {
-      const resSusc = await api.get(`/suscripciones/cliente/${id}`);
-      suscripcionActiva.value = resSusc.data.find(s => s.estado === 'ACTIVA') || null;
-    }
   } catch (error) {
     console.error("Error cargando datos", error);
   }

@@ -39,9 +39,17 @@
                   class="w-48 h-48 mix-blend-multiply"
                 />
               </div>
-              <div class="bg-gray-100 px-4 py-1 rounded-full">
+              
+              <div class="bg-gray-100 px-4 py-1 rounded-full mb-4">
                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wide">ID: #{{ usuario.idCliente }}</p>
               </div>
+
+              <button 
+                @click="descargarQR"
+                class="text-blue-600 hover:text-blue-800 text-sm font-bold flex items-center gap-2 hover:underline transition"
+              >
+                <span>⬇️</span> Descargar Imagen QR
+              </button>
             </div>
 
             <div v-if="usuario.tipoCliente === 'SUSCRIPTOR'" class="border-t border-gray-100 p-4 bg-blue-50/30">
@@ -104,6 +112,7 @@
               HISTORIAL & PAGOS
               <div v-if="pestana === 'historial'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
             </button>
+
             <button 
               v-if="usuario.tipoCliente === 'SUSCRIPTOR'"
               @click="pestana = 'rutinas'"
@@ -320,9 +329,26 @@ const mensajeEstado = computed(() => {
 });
 
 
+const descargarQR = async () => {
+  try {
+    const response = await api.get(`/clientes/${usuario.value.idCliente}/qr`, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `QR-Acceso-${usuario.value.nombre}.png`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (e) {
+    console.error(e);
+    alert('No se pudo descargar el QR');
+  }
+};
+
+
 const logout = () => {
   localStorage.clear();
-  router.push('/'); 
+  router.push('/');
 };
 </script>
 

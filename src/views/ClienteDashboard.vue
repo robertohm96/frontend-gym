@@ -104,7 +104,6 @@
               HISTORIAL & PAGOS
               <div v-if="pestana === 'historial'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full transition-all"></div>
             </button>
-
             <button 
               v-if="usuario.tipoCliente === 'SUSCRIPTOR'"
               @click="pestana = 'rutinas'"
@@ -227,7 +226,7 @@ import api from '../services/api';
 
 const router = useRouter();
 const usuario = ref({});
-const pestana = ref('historial'); // Por defecto en historial
+const pestana = ref('historial');
 
 const rutinas = ref([]);
 const pagos = ref([]);
@@ -237,7 +236,6 @@ const suscripcionActiva = ref(null);
 const ocupacion = ref(0);
 let interval = null;
 
-// Formateador seguro de fechas ajustado a COLOMBIA
 const formatearFecha = (fecha) => {
   if (!fecha) return '-';
   const opciones = { 
@@ -246,12 +244,9 @@ const formatearFecha = (fecha) => {
     month: '2-digit', 
     day: '2-digit' 
   };
-
-  // Si viene como array [2024, 12, 07]
   if (Array.isArray(fecha)) {
     return new Date(fecha[0], fecha[1]-1, fecha[2]).toLocaleDateString('es-CO', opciones);
   }
-  // Si viene como string
   return new Date(fecha).toLocaleDateString('es-CO', opciones);
 };
 
@@ -269,7 +264,6 @@ onMounted(async () => {
 
   await cargarDatosCliente();
   
-  // Iniciar monitoreo en tiempo real
   fetchOcupacion();
   interval = setInterval(fetchOcupacion, 10000);
 });
@@ -279,7 +273,6 @@ onUnmounted(() => clearInterval(interval));
 const cargarDatosCliente = async () => {
   const id = usuario.value.idCliente;
   try {
-    // Solo cargamos rutinas si es suscriptor
     if (usuario.value.tipoCliente === 'SUSCRIPTOR') {
         const resRutinas = await api.get(`/rutinas/cliente/${id}`);
         rutinas.value = resRutinas.data;
@@ -326,9 +319,10 @@ const mensajeEstado = computed(() => {
   return 'Gimnasio Lleno';
 });
 
+
 const logout = () => {
   localStorage.clear();
-  router.push('/login');
+  router.push('/'); 
 };
 </script>
 

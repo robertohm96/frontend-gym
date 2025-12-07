@@ -304,7 +304,7 @@ const nuevaMaquina = ref({ nombre: '', tipo: 'Fuerza', estado: 'DISPONIBLE' });
 // Estado Pago
 const mostrarModalPago = ref(false);
 const clienteSeleccionado = ref({});
-const usarMaquinaExtra = ref(false); // Checkbox del combo
+const usarMaquinaExtra = ref(false); 
 const formPago = ref({ idCliente: null, concepto: 'DIARIO', monto: 3000, idMaquina: null });
 
 const tabs = [
@@ -343,14 +343,12 @@ const cargarTodo = async () => {
   }
 };
 
-// --- Clientes ---
 const verQr = (id) => window.open(`http://localhost:8080/api/clientes/${id}/qr`, '_blank');
 const eliminarCliente = async (id) => {
   if(!confirm('¿Eliminar cliente permanentemente?')) return;
   try { await api.delete(`/clientes/${id}`); await cargarTodo(); } catch(e) { alert('Error al eliminar'); }
 };
 
-// --- Pagos ---
 const abrirModalPago = (c) => {
   clienteSeleccionado.value = c;
   usarMaquinaExtra.value = false;
@@ -375,7 +373,6 @@ const procesarPago = async () => {
 
   try {
     if (formPago.value.concepto === 'DIARIO' && usarMaquinaExtra.value) {
-       // LÓGICA COMBO: Dos pagos internos
        await api.post('/pagos', { 
          idCliente: formPago.value.idCliente, 
          concepto: 'DIARIO', 
@@ -388,7 +385,6 @@ const procesarPago = async () => {
          idMaquina: formPago.value.idMaquina 
        });
     } else {
-       // Pago normal (Diario solo o Mensual)
        await api.post('/pagos', formPago.value);
     }
     
@@ -401,7 +397,6 @@ const procesarPago = async () => {
   }
 };
 
-// --- Personal ---
 const crearEntrenador = async () => {
   try { await api.post('/entrenadores', nuevoEntrenador.value); mostrarFormEntrenador.value = false; await cargarTodo(); } catch(e) { alert('Error'); }
 };
@@ -410,7 +405,6 @@ const eliminarEntrenador = async (id) => {
   try { await api.delete(`/entrenadores/${id}`); await cargarTodo(); } catch(e) { alert('Error'); }
 };
 
-// --- Máquinas ---
 const crearMaquina = async () => {
   try { await api.post('/maquinas', nuevaMaquina.value); mostrarFormMaquina.value = false; await cargarTodo(); } catch(e) { alert('Error'); }
 };
@@ -423,7 +417,11 @@ const eliminarMaquina = async (id) => {
   try { await api.delete(`/maquinas/${id}`); await cargarTodo(); } catch(e) { alert('Error'); }
 };
 
-const logout = () => { localStorage.clear(); router.push('/login'); };
+
+const logout = () => { 
+  localStorage.clear(); 
+  router.push('/'); 
+};
 </script>
 
 <style>

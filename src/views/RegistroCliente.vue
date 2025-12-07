@@ -13,20 +13,20 @@
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div class="bg-white py-8 px-4 shadow-xl shadow-gray-200 sm:rounded-2xl sm:px-10 border border-gray-100 relative overflow-hidden">
         
-        <div v-if="registroExitoso" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
+        <div v-if="registroExitoso" class="flex flex-col items-center justify-center py-10 text-center animate-fade-in-up">
           <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
             <span class="text-4xl">🎉</span>
           </div>
           <h3 class="text-2xl font-bold text-gray-800 mb-2">¡Bienvenido a bordo!</h3>
-          <p class="text-gray-500 mb-8">
+          <p class="text-gray-500 mb-8 px-4">
             Tu cuenta ha sido creada exitosamente. <br>
-            Ya puedes acceder a todos los beneficios.
+            <span class="text-blue-600 font-bold block mt-2">Redirigiendo al login...</span>
           </p>
           <router-link 
             to="/login"
             class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg hover:shadow-green-500/30 block"
           >
-            IR A INICIAR SESIÓN
+            IR A INICIAR SESIÓN AHORA
           </router-link>
         </div>
 
@@ -108,11 +108,13 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../services/api';
 
+const router = useRouter();
 const cargando = ref(false);
 const errorMsg = ref('');
-const registroExitoso = ref(false); // Controla si mostramos el mensaje de éxito
+const registroExitoso = ref(false);
 
 const formulario = ref({
   nombre: '',
@@ -128,8 +130,14 @@ const registrarUsuario = async () => {
 
   try {
     await api.post('/clientes', formulario.value);
-    // En lugar de alert, activamos la variable para mostrar el diseño de éxito
+    
+    // Activar pantalla de éxito
     registroExitoso.value = true;
+    
+    // REDIRECCIÓN AUTOMÁTICA EN 3 SEGUNDOS
+    setTimeout(() => {
+      router.push('/login');
+    }, 3000);
     
   } catch (error) {
     console.error(error);

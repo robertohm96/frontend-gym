@@ -149,7 +149,6 @@ const router = useRouter();
 const usuario = ref({});
 const clientes = ref([]);
 
-// Estado para el modal y rutinas
 const mostrarModal = ref(false);
 const clienteSeleccionado = ref(null);
 const rutinasCliente = ref([]);
@@ -168,7 +167,6 @@ onMounted(async () => {
   await cargarClientes();
 });
 
-// Filtrar solo los que son SUSCRIPTORES (los de plan diario no llevan rutina)
 const clientesSuscriptores = computed(() => {
   return clientes.value.filter(c => c.tipoCliente === 'SUSCRIPTOR');
 });
@@ -186,14 +184,13 @@ const cargarClientes = async () => {
 const abrirGestionRutinas = async (cliente) => {
   clienteSeleccionado.value = cliente;
   await cargarRutinas(cliente.idCliente);
-  cancelarEdicion(); // Limpiar formulario
+  cancelarEdicion();
   mostrarModal.value = true;
 };
 
 const cargarRutinas = async (idCliente) => {
   try {
     const res = await api.get(`/rutinas/cliente/${idCliente}`);
-    // Ordenar por fecha descendente (la más nueva primero)
     rutinasCliente.value = res.data.sort((a, b) => new Date(b.fechaAsignacion) - new Date(a.fechaAsignacion));
   } catch (e) {
     console.error("Error cargando rutinas", e);
@@ -206,21 +203,17 @@ const guardarRutina = async () => {
   const payload = {
     descripcion: formRutina.value.descripcion,
     cliente: { idCliente: clienteSeleccionado.value.idCliente },
-    entrenador: { idEntrenador: usuario.value.idEntrenador } // ¡Importante! Enlazar al entrenador actual
+    entrenador: { idEntrenador: usuario.value.idEntrenador }
   };
 
   try {
     if (editandoId.value) {
-      // ACTUALIZAR
       await api.put(`/rutinas/${editandoId.value}`, payload);
       alert('Rutina actualizada correctamente');
     } else {
-      // CREAR NUEVA
       await api.post('/rutinas', payload);
       alert('Rutina asignada correctamente');
     }
-    
-    // Recargar lista y limpiar
     await cargarRutinas(clienteSeleccionado.value.idCliente);
     cancelarEdicion();
 
@@ -245,9 +238,10 @@ const cerrarModal = () => {
   clienteSeleccionado.value = null;
 };
 
+
 const logout = () => {
   localStorage.clear();
-  router.push('/login');
+  router.push('/'); 
 };
 </script>
 

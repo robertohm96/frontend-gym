@@ -46,7 +46,8 @@
       </div>
 
       <div v-if="activeTab === 'dashboard'" class="animate-fade-in-up">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
               <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Clientes</p>
@@ -63,10 +64,38 @@
           </div>
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-              <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Pagos Registrados</p>
-              <p class="text-4xl font-black text-purple-600 mt-2">{{ reportes.total_transacciones || 0 }}</p>
+              <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Uso Máq. Extra</p>
+              <p class="text-4xl font-black text-orange-500 mt-2">{{ reportes.total_usos_extra || 0 }}</p>
             </div>
-            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl">💳</div>
+            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl">⚡</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-xl shadow-lg text-white relative overflow-hidden">
+            <div class="relative z-10">
+              <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Ingresos Totales Acumulados</p>
+              <p class="text-5xl font-black tracking-tight text-green-400">
+                ${{ (reportes.ingresos_totales || 0).toLocaleString('es-CO') }}
+              </p>
+              <div class="mt-4 flex gap-4 text-xs text-gray-300">
+                <span class="bg-white/10 px-2 py-1 rounded">Transacciones: {{ reportes.total_transacciones }}</span>
+              </div>
+            </div>
+            <div class="absolute right-0 top-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Hora de Mayor Afluencia</p>
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-2xl font-bold">
+                🕐
+              </div>
+              <div>
+                <p class="text-3xl font-black text-gray-800">{{ reportes.hora_pico_historica || '--' }}</p>
+                <p class="text-sm text-gray-500">Basado en historial de entradas</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -304,7 +333,7 @@ const nuevaMaquina = ref({ nombre: '', tipo: 'Fuerza', estado: 'DISPONIBLE' });
 // Estado Pago
 const mostrarModalPago = ref(false);
 const clienteSeleccionado = ref({});
-const usarMaquinaExtra = ref(false); 
+const usarMaquinaExtra = ref(false); // Checkbox del combo
 const formPago = ref({ idCliente: null, concepto: 'DIARIO', monto: 3000, idMaquina: null });
 
 const tabs = [
@@ -343,12 +372,14 @@ const cargarTodo = async () => {
   }
 };
 
+// --- Clientes ---
 const verQr = (id) => window.open(`http://localhost:8080/api/clientes/${id}/qr`, '_blank');
 const eliminarCliente = async (id) => {
   if(!confirm('¿Eliminar cliente permanentemente?')) return;
   try { await api.delete(`/clientes/${id}`); await cargarTodo(); } catch(e) { alert('Error al eliminar'); }
 };
 
+// --- Pagos ---
 const abrirModalPago = (c) => {
   clienteSeleccionado.value = c;
   usarMaquinaExtra.value = false;
@@ -373,6 +404,7 @@ const procesarPago = async () => {
 
   try {
     if (formPago.value.concepto === 'DIARIO' && usarMaquinaExtra.value) {
+       // LÓGICA COMBO: Dos pagos internos
        await api.post('/pagos', { 
          idCliente: formPago.value.idCliente, 
          concepto: 'DIARIO', 
@@ -385,6 +417,7 @@ const procesarPago = async () => {
          idMaquina: formPago.value.idMaquina 
        });
     } else {
+       // Pago normal (Diario solo o Mensual)
        await api.post('/pagos', formPago.value);
     }
     
@@ -397,6 +430,7 @@ const procesarPago = async () => {
   }
 };
 
+// --- Personal ---
 const crearEntrenador = async () => {
   try { await api.post('/entrenadores', nuevoEntrenador.value); mostrarFormEntrenador.value = false; await cargarTodo(); } catch(e) { alert('Error'); }
 };

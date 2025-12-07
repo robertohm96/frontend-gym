@@ -13,7 +13,12 @@ const routes = [
       if (u && u.rol === 'admin') next(); else next('/login');
     }
   },
-  // --- NUEVA RUTA CLIENTE ---
+  {
+    path: '/registro-cliente',
+    name: 'RegistroCliente',
+    component: () => import('../views/RegistroCliente.vue')
+  },
+  
   { 
     path: '/perfil', 
     component: () => import('../views/ClienteDashboard.vue'),

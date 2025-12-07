@@ -4,24 +4,29 @@ import Login from '../views/Login.vue';
 
 const routes = [
 
+  { path: '/', name: 'Home', component: Home },
+  { path: '/login', name: 'Login', component: Login },
   { 
-    path: '/', 
-    name: 'Home', 
-    component: Home 
+    path: '/registro-cliente', 
+    name: 'RegistroCliente', 
+    component: () => import('../views/RegistroCliente.vue') 
   },
   
 
   { 
-    path: '/login', 
-    name: 'Login', 
-    component: Login 
+    path: '/horarios', 
+    name: 'Horarios', 
+    component: () => import('../views/Horarios.vue') 
   },
-
-
-  {
-    path: '/registro-cliente',
-    name: 'RegistroCliente',
-    component: () => import('../views/RegistroCliente.vue')
+  { 
+    path: '/planes', 
+    name: 'Planes', 
+    component: () => import('../views/Planes.vue') 
+  },
+  { 
+    path: '/ubicacion', 
+    name: 'Ubicacion', 
+    component: () => import('../views/Ubicacion.vue') 
   },
 
 
@@ -35,7 +40,6 @@ const routes = [
     }
   },
 
-
   {
     path: '/admin/acceso',
     name: 'ControlAcceso',
@@ -45,7 +49,6 @@ const routes = [
       if (u && u.rol === 'ADMIN') next(); else next('/login');
     }
   },
-  
 
   { 
     path: '/perfil', 
@@ -56,7 +59,6 @@ const routes = [
       if (u && u.rol === 'CLIENTE') next(); else next('/login');
     }
   },
-
 
   { 
     path: '/entrenador', 

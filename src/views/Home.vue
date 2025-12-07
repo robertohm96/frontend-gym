@@ -273,13 +273,19 @@
           </div>
 
           <div>
-            <h5 class="font-bold text-lg mb-4 text-white">Enlaces Rápidos</h5>
-            <div class="space-y-2">
-              <a href="#" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">Planes y Precios</a>
-              <a href="#" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">Horarios</a>
-              <a href="#" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">Ubicación</a>
-            </div>
-          </div>
+  <h5 class="font-bold text-lg mb-4 text-white">Enlaces Rápidos</h5>
+  <div class="space-y-2">
+    <router-link to="/planes" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">
+      Planes y Precios
+    </router-link>
+    <router-link to="/horarios" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">
+      Horarios
+    </router-link>
+    <router-link to="/ubicacion" class="block text-gray-400 hover:text-blue-400 transition-colors duration-300">
+      Ubicación
+    </router-link>
+  </div>
+</div>
 
           <div>
             <h5 class="font-bold text-lg mb-4 text-white">Síguenos</h5>

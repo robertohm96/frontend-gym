@@ -1,9 +1,1 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Opcional: Una fuente más moderna si la tienes, sino usa la del sistema */
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #ffffff; /* Forzamos fondo blanco */
-}
+@import "tailwindcss";

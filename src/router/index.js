@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router';
+// CAMBIO IMPORTANTE: Importar createWebHashHistory en lugar de createWebHistory
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Login from '../views/Login.vue';
 
 const routes = [
-
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { 
@@ -11,8 +11,6 @@ const routes = [
     name: 'RegistroCliente', 
     component: () => import('../views/RegistroCliente.vue') 
   },
-  
-
   { 
     path: '/horarios', 
     name: 'Horarios', 
@@ -28,8 +26,6 @@ const routes = [
     name: 'Ubicacion', 
     component: () => import('../views/Ubicacion.vue') 
   },
-
-
   { 
     path: '/admin', 
     name: 'AdminDashboard',
@@ -39,7 +35,6 @@ const routes = [
       if (u && u.rol === 'ADMIN') next(); else next('/login');
     }
   },
-
   {
     path: '/admin/acceso',
     name: 'ControlAcceso',
@@ -49,7 +44,6 @@ const routes = [
       if (u && u.rol === 'ADMIN') next(); else next('/login');
     }
   },
-
   { 
     path: '/perfil', 
     name: 'ClienteDashboard',
@@ -59,7 +53,6 @@ const routes = [
       if (u && u.rol === 'CLIENTE') next(); else next('/login');
     }
   },
-
   { 
     path: '/entrenador', 
     name: 'EntrenadorDashboard',
@@ -72,7 +65,8 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  
+  history: createWebHashHistory(),
   routes
 });
 

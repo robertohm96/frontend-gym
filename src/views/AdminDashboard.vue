@@ -131,7 +131,7 @@
                   </td>
                   <td class="px-6 py-4">
                     <img 
-                      :src="`http://localhost:8080/api/clientes/${c.idCliente}/qr`" 
+                      :src="`${apiUrl}/clientes/${c.idCliente}/qr`" 
                       class="w-10 h-10 border rounded p-1 bg-white cursor-pointer hover:scale-[4] hover:shadow-xl transition z-10 relative"
                       title="Clic para ampliar"
                       @click="verQr(c.idCliente)"
@@ -306,6 +306,9 @@ import { useRouter } from 'vue-router';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 
+// CORRECCIÓN AQUÍ: Definir la variable base para las imágenes
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 const router = useRouter();
 const usuario = ref({});
 const activeTab = ref('dashboard');
@@ -364,7 +367,8 @@ const cargarTodo = async () => {
   }
 };
 
-const verQr = (id) => window.open(`http://localhost:8080/api/clientes/${id}/qr`, '_blank');
+// CORRECCIÓN AQUÍ: Uso de apiUrl
+const verQr = (id) => window.open(`${apiUrl}/clientes/${id}/qr`, '_blank');
 
 const eliminarCliente = (id) => {
   Swal.fire({

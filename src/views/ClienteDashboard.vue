@@ -34,7 +34,7 @@
               <div class="p-4 border-4 border-dashed border-gray-200 rounded-2xl bg-gray-50 mb-4 transition-transform hover:scale-105 duration-300">
                 <img 
                   v-if="usuario.idCliente"
-                  :src="`http://localhost:8080/api/clientes/${usuario.idCliente}/qr`" 
+                  :src="`${apiUrl}/clientes/${usuario.idCliente}/qr`" 
                   alt="QR Personal"
                   class="w-48 h-48 mix-blend-multiply"
                 />
@@ -233,6 +233,9 @@ import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
 import Swal from 'sweetalert2';
+
+// CORRECCIÓN AQUÍ: Definir la variable base para las imágenes
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const router = useRouter();
 const usuario = ref({});
